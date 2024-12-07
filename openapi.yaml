@@ -1,0 +1,537 @@
+openapi: 3.0.3
+info:
+  title: VK Segment Service API
+  version: &version v1
+servers:
+  - url: '{env-url}/api/{version}'
+    description: VK Segment Service
+    variables:
+      env-url:
+        enum:
+          - &no-env ''
+          - http://localhost:8090
+          - https://segment-service.example.com
+        default: *no-env
+      version:
+        enum: [ *version ]
+        default: *version
+tags:
+- name: Segment Management
+  description: API for managing segments and users
+- name: Authorization and Access Management
+  description: API for managing user authorization and access rights
+paths:
+  /segments/{id}:
+    get:
+      tags:
+      - Segment Management
+      summary: Get segment
+      operationId: getSegment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "500":
+          description: Server error
+        "200":
+          description: Segment retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SegmentResponseDTO"
+        "404":
+          description: Segment not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: Invalid input data
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+      - Segment Management
+      summary: Update a segment's details
+      operationId: updateSegment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SegmentRequestDTO"
+        required: true
+      responses:
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "201":
+          description: Segment updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SegmentResponseDTO"
+        "404":
+          description: Segment not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: Invalid input data
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+      - Segment Management
+      summary: Delete an existing segment
+      operationId: deleteSegment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Segment deleted successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DefaultResponseDTO"
+        "404":
+          description: Segment not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /segments:
+    get:
+      tags:
+      - Segment Management
+      summary: Get all segments
+      operationId: getSegments
+      responses:
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Segments retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SegmentResponseDTO"
+        "400":
+          description: Invalid input data
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+      - Segment Management
+      summary: Create a new segment
+      operationId: createSegment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SegmentRequestDTO"
+        required: true
+      responses:
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "201":
+          description: Segment created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SegmentResponseDTO"
+        "400":
+          description: Invalid input data
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /segments/{segmentId}/assign:
+    post:
+      tags:
+      - Segment Management
+      summary: Randomly distribute users across segments
+      operationId: assignSegmentToPercentage
+      parameters:
+      - name: segmentId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignSegmentPercentageDTO"
+        required: true
+      responses:
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Users distributed successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DefaultResponseDTO"
+        "400":
+          description: Invalid input data
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /segments/{segment_id}/users:
+    put:
+      tags:
+        - Segment Management
+      summary: Add users to segment
+      operationId: addUsersToSegment
+      parameters: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsersToSegmentDTO"
+        required: true
+      responses:
+        "200":
+          description: Users added to segments successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DefaultResponseDTO"
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Users or Segment not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: Invalid users ID or segment ID
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Segment Management
+      summary: Remove users from segment
+      operationId: removeUsersFromSegments
+      parameters: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsersToSegmentDTO"
+        required: true
+      responses:
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Users or Segment not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: Invalid users ID or segment id
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Users removed from segment successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DefaultResponseDTO"
+  /users/{userId}/segments:
+    get:
+      tags:
+      - Segment Management
+      summary: Get segments associated with a specific user
+      operationId: getUserSegments
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: User's segments retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserSegmentsResponseDTO"
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: User not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/set-access-rights:
+    post:
+      tags:
+        - Authorization and Access Management
+      summary: Set access rights for user
+      operationId: setAccessRights
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccessRightsRequestDTO"
+        required: true
+      responses:
+        "401":
+          description: User not authorized
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Access rights updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DefaultResponseDTO"
+        "400":
+          description: Invalid request data
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/logout:
+    post:
+      tags:
+        - Authorization and Access Management
+      summary: User logout
+      operationId: logout
+      responses:
+        "401":
+          description: User not authorized
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Logout successful
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DefaultResponseDTO"
+  /auth/login:
+    post:
+      tags:
+        - Authorization and Access Management
+      summary: User login
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponseDTO"
+        "500":
+          description: Server error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: Invalid credentials
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    UsersToSegmentDTO:
+      type: object
+    DefaultResponseDTO:
+      type: object
+      properties:
+        value:
+          type: string
+    SegmentRequestDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    SegmentResponseDTO:
+      type: object
+      properties:
+        segmentId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    AssignSegmentPercentageDTO:
+      type: object
+      properties:
+        percentage:
+          type: integer
+          format: int32
+    UserSegmentsResponseDTO:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        segments:
+          type: array
+          items:
+            $ref: "#/components/schemas/SegmentResponseDTO"
+    ErrorResponse:
+      required:
+        - code
+        - error
+      type: object
+      properties:
+        code:
+          type: string
+        error:
+          type: string
+    AuthRequestDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "user@example.com"
+        password:
+          type: string
+          example: "strong_password"
+    AuthResponseDTO:
+      type: object
+      properties:
+        token:
+          type: string
+          description: "JWT token for authorization"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        tokenType:
+          type: string
+          description: "Type of the token, usually 'Bearer'"
+          example: "Bearer"
+
+    AccessRightsRequestDTO:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "User identifier"
+          example: "12345"
+        segmentAccess:
+          $ref: '#/components/schemas/SegmentAccess'
+        clientAccess:
+          $ref: '#/components/schemas/ClientAccess'
+        apiAccess:
+          $ref: '#/components/schemas/ApiAccess'
+        monitoringAccess:
+          $ref: '#/components/schemas/MonitoringAccess'
+
+    SegmentAccess:
+      type: string
+      description: "Access level for working with segments"
+      enum: [ "NO_ACCESS", "VIEW", "EDIT", "ADD", "DELETE" ]
+
+    ClientAccess:
+      type: string
+      description: "Access level for working with clients"
+      enum: [ "NO_ACCESS", "VIEW", "EDIT", "ADD", "DELETE" ]
+
+    ApiAccess:
+      type: string
+      description: "Access to API for working with segments and clients"
+      enum: [ "NO_ACCESS", "ACCESS_GRANTED" ]
+
+    MonitoringAccess:
+      type: string
+      description: "Access to monitoring system"
+      enum: [ "NO_ACCESS", "ACCESS_GRANTED" ]
